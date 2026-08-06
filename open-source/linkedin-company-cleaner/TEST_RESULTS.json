@@ -1,0 +1,34 @@
+{
+  "content_workflow": {
+    "scan": 2,
+    "actions": [
+      "acme-direct",
+      "beta-open",
+      "beta-confirm"
+    ],
+    "result": {
+      "completed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "stopped": false
+    }
+  },
+  "popup_workflow": {
+    "navigation": {
+      "id": 99,
+      "opts": {
+        "url": "https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company"
+      }
+    },
+    "message_types": [
+      "LCC_STATE",
+      "LCC_SCAN",
+      "LCC_START",
+      "LCC_STOP"
+    ],
+    "selected_ids": [
+      "company-a",
+      "company-b"
+    ]
+  }
+}
