@@ -1,54 +1,66 @@
-# LinkedIn Company Cleaner v1.1.0 Test Report
+# LinkedIn Company Cleaner v1.1.1 Test Report
 
 Test date: 2026-08-06
 
-## Validation performed
+## Installation regression fixed
 
-1. Manifest JSON parse and Manifest V3 field validation.
-2. JavaScript syntax checks for `background.js`, `lib.js`, `content.js`, and `popup.js`.
-3. Real Chromium DOM dry run against a virtual LinkedIn company-manager page.
-4. Popup action dry run with mocked Chrome extension APIs.
-5. Missing-content-script recovery test.
-6. Release ZIP extraction and checksum verification.
+Version 1.1.0 was prechecked by parsing the archive but was not validated using the exact end-user installation directory. Version 1.1.1 adds that missing regression check.
 
-## Chromium workflow result
+## Clean extraction and manifest-location test
 
-- Companies scanned: 2
-- Direct-unfollow path: passed
-- Confirmation-dialog path: passed
-- Completed: 2
+1. Created an empty test directory.
+2. Extracted `linkedin-company-cleaner-v1.1.1-EXTRACT-FIRST.zip` into it.
+3. Confirmed `manifest.json` exists directly at the extracted directory root.
+4. Confirmed all resources declared by the manifest exist.
+5. Parsed the manifest as JSON and verified Manifest V3 and version 1.1.1.
+
+Result: PASS
+
+## Chromium extension validation
+
+Chromium was run with:
+
+`chromium --pack-extension=<exact-clean-extracted-directory> --no-message-box`
+
+Chromium created both a nonempty `.crx` and `.pem`, confirming that Chromium could read the manifest and package all declared extension resources from the exact folder users must select for **Load unpacked**.
+
+Result: PASS
+
+## JavaScript validation
+
+`background.js`, `lib.js`, `content.js`, and `popup.js` passed Node syntax checks.
+
+Result: PASS
+
+## Action dry run
+
+- Exact company-manager navigation: PASS
+- Scan: PASS
+- Select all: PASS
+- Start selected: PASS
+- Stop: PASS
+- Direct-unfollow path: PASS
+- Confirmation-dialog path: PASS
+- Companies completed: 2
 - Failed: 0
 - Skipped: 0
 
-Observed page actions:
+## Missing content-script recovery
 
-1. `acme-direct`
-2. `beta-open`
-3. `beta-confirm`
+- Initial message failure simulated: PASS
+- CSS reinjected: 1 time
+- Scripts reinjected: 1 time
+- Retry succeeded: PASS
 
-## Popup workflow result
+## Package safeguards
 
-The following message sequence executed successfully:
+The archive now includes:
 
-1. `LCC_STATE`
-2. `LCC_SCAN`
-3. `LCC_START`
-4. `LCC_STOP`
+- `README-INSTALL-FIRST.txt`
+- `VERIFY-AND-OPEN-EXTENSIONS.cmd`
 
-The Start action received both selected company IDs.
+The Windows verifier refuses to continue unless `manifest.json` and all required extension files are in the current directory.
 
-The left navigation button updated the active tab to:
-
-`https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company`
-
-## Reinjection recovery result
-
-The first simulated `tabs.sendMessage` failed with a missing receiver. The popup then:
-
-- inserted `content.css` once
-- executed `lib.js` and `content.js` once
-- retried the message successfully
-
-## Result
+## Final result
 
 PASS

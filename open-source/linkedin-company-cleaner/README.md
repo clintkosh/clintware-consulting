@@ -1,55 +1,39 @@
 # LinkedIn Company Cleaner by Clintware
 
-A Manifest V3 browser extension for Microsoft Edge, Google Chrome, Brave, Vivaldi, and other Chromium browsers. It works from LinkedIn's company manager, scans company Pages only, and lets the user selectively or bulk unfollow company Pages with one run-level confirmation.
+Current release: **v1.1.1**
 
-## Version 1.1.0
+Manifest V3 browser extension for Microsoft Edge, Google Chrome, Brave, Vivaldi, and other Chromium browsers. It bulk or selectively unfollows LinkedIn company Pages from the user's own company-following list.
 
-This release fixes the original scan failure and refreshes the interface.
+## Download
 
-- Uses LinkedIn's current company-manager route:
-  `https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company`
-- Detects followed-company controls labeled either `Following ...` or `Unfollow ...`
-- Handles both direct state changes and confirmation-dialog flows
-- Reinjects the content script automatically when a previously open LinkedIn tab has no receiver
-- Adds a smaller, cleaner popup interface and compact in-page progress panel
-- Preserves company-only filtering through `/company/` URLs
+Use `linkedin-company-cleaner-v1.1.1-EXTRACT-FIRST.zip`.
 
-## Download and install
+SHA-256: `60246b721c921e3e344384b5b06ef7fbbc163091259c32a756f22abb9fe989ee`
 
-1. Download `linkedin-company-cleaner-v1.1.0.zip`.
-2. Extract the ZIP.
-3. Open `edge://extensions` or `chrome://extensions`.
-4. Enable **Developer mode**.
-5. Choose **Load unpacked**.
-6. Select the extracted directory containing `manifest.json`.
-7. Open the extension and select **Find followed companies**.
-8. On LinkedIn, open the extension again and select **Scan**.
+## Important installation step
 
-## Privacy and scope
+The ZIP must be extracted before using **Load unpacked**. The exact folder selected in Edge or Chrome must directly contain `manifest.json`.
 
-- Company Pages only
-- Ignores people, schools, newsletters, groups, and skills
-- Runs locally in the active LinkedIn tab
-- No analytics, remote code, account credentials, or external APIs
-- Includes selective/all-company modes, per-run limits, randomized delays, auto-scroll, progress, and stop controls
+The package includes `VERIFY-AND-OPEN-EXTENSIONS.cmd`, which checks that `manifest.json` and the required extension files are present before opening the extensions page.
+
+## Company manager
+
+The **Find followed companies** control opens:
+
+`https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company`
 
 ## Validation
 
-The v1.1.0 dry run used a real headless Chromium DOM with virtual LinkedIn company rows. It verified:
+v1.1.1 was regression-tested by extracting the release into an empty directory and pointing Chromium's extension packer at that exact directory. Chromium successfully read and packed the extension. The action dry run also passed Scan, Select All, Start, Stop, direct-unfollow, confirmation-dialog, and missing-content-script recovery flows.
 
-- exact left-button navigation URL
-- popup Scan, Select All, Start, and Stop message wiring
-- scanning controls labeled `Unfollow Company` and `Following Company`
-- direct-unfollow completion
-- confirmation-dialog completion
-- automatic content-script reinjection
-- zero failed actions in the two-company end-to-end fixture
+See `TEST_REPORT.md` for the full validation record.
 
-See `TEST_REPORT.md` and `TEST_RESULTS.json`.
+## Scope and privacy
 
-## Compatibility
-
-LinkedIn changes its interface frequently, so future selector maintenance may be required. This independent project is not affiliated with or authorized by LinkedIn.
+- Company Pages only
+- No people, schools, newsletters, groups, or skills
+- Runs locally in the active LinkedIn tab
+- No analytics, external APIs, or remote code
 
 ## License
 
