@@ -1,66 +1,89 @@
-# LinkedIn Company Cleaner v1.1.1 Test Report
+# LinkedIn Company Cleaner v1.1.2 Test Report
 
-Test date: 2026-08-06
+Test date: 2026-08-07
 
-## Installation regression fixed
+## Regression addressed
 
-Version 1.1.0 was prechecked by parsing the archive but was not validated using the exact end-user installation directory. Version 1.1.1 adds that missing regression check.
+v1.1.1 failed for the user in Microsoft Edge with:
 
-## Clean extraction and manifest-location test
+`Couldn't load icon icons/icon48.png specified in icons.`
 
-1. Created an empty test directory.
-2. Extracted `linkedin-company-cleaner-v1.1.1-EXTRACT-FIRST.zip` into it.
-3. Confirmed `manifest.json` exists directly at the extracted directory root.
-4. Confirmed all resources declared by the manifest exist.
-5. Parsed the manifest as JSON and verified Manifest V3 and version 1.1.1.
+The v1.1.1 ZIP did physically contain a valid 48x48 PNG, but Edge still rejected the icon reference. v1.1.2 removes the optional extension icon declarations entirely. The v1.1.2 release contains no PNG files.
+
+## Archive layout test
+
+The final ZIP was extracted into a clean empty directory.
+
+Result:
+
+- `manifest.json` directly at extraction root: PASS
+- nested `manifest.json`: NONE
+- archive contains a single installation level: PASS
+
+## Manifest dependency test
+
+Manifest-declared file dependencies:
+
+- `background.js`
+- `popup.html`
+- `lib.js`
+- `content.js`
+- `content.css`
+
+All exist, are readable, and are non-empty: PASS
+
+Additional assertions:
+
+- `icons` manifest property absent: PASS
+- `action.default_icon` absent: PASS
+- PNG files in release: 0
+
+This specifically prevents recurrence of the v1.1.1 icon-loading failure.
+
+## Chromium parse test
+
+Chromium successfully packed the exact clean-extracted directory using `--pack-extension`, confirming it parsed the Manifest V3 structure and declared resources.
 
 Result: PASS
 
-## Chromium extension validation
+A separate attempt to use the system Chromium's `--load-extension` switch was blocked by an administrator policy in the execution environment (`Loading of unpacked extensions is disabled by the administrator`). This environment policy is unrelated to the extension, so it is not counted as an extension pass/fail signal.
 
-Chromium was run with:
+## JavaScript syntax
 
-`chromium --pack-extension=<exact-clean-extracted-directory> --no-message-box`
-
-Chromium created both a nonempty `.crx` and `.pem`, confirming that Chromium could read the manifest and package all declared extension resources from the exact folder users must select for **Load unpacked**.
+`background.js`, `lib.js`, `content.js`, and `popup.js` passed Node syntax validation.
 
 Result: PASS
 
-## JavaScript validation
+## Chromium popup action simulation
 
-`background.js`, `lib.js`, `content.js`, and `popup.js` passed Node syntax checks.
+The popup was rendered in Chromium with mocked Chrome extension APIs.
 
-Result: PASS
+Verified:
 
-## Action dry run
+- version label v1.1.2: PASS
+- initial state/scan data rendering: PASS
+- Scan sends `LCC_SCAN`: PASS
+- Select All selects both fixture companies: PASS
+- Start sends both selected company IDs in `LCC_START`: PASS
+- Stop sends `LCC_STOP`: PASS
+- Find followed companies navigates to `https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company`: PASS
 
-- Exact company-manager navigation: PASS
-- Scan: PASS
-- Select all: PASS
-- Start selected: PASS
-- Stop: PASS
-- Direct-unfollow path: PASS
-- Confirmation-dialog path: PASS
-- Companies completed: 2
-- Failed: 0
-- Skipped: 0
+## Chromium content workflow simulation
 
-## Missing content-script recovery
+Virtual LinkedIn company-manager DOM contained two company rows:
 
-- Initial message failure simulated: PASS
-- CSS reinjected: 1 time
-- Scripts reinjected: 1 time
-- Retry succeeded: PASS
+1. direct unfollow path
+2. confirmation-dialog unfollow path
 
-## Package safeguards
+Result:
 
-The archive now includes:
-
-- `README-INSTALL-FIRST.txt`
-- `VERIFY-AND-OPEN-EXTENSIONS.cmd`
-
-The Windows verifier refuses to continue unless `manifest.json` and all required extension files are in the current directory.
+- companies discovered: 2
+- completed: 2
+- failed: 0
+- content-script ping version: 1.1.2
 
 ## Final result
 
 PASS
+
+v1.1.2 should be used instead of v1.1.1.
