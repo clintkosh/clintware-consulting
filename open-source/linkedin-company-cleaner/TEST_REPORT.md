@@ -1,89 +1,64 @@
-# LinkedIn Company Cleaner v1.1.2 Test Report
+# LinkedIn Company Cleaner v1.1.3 Test Report
 
 Test date: 2026-08-07
 
-## Regression addressed
+## Root cause fixed
 
-v1.1.1 failed for the user in Microsoft Edge with:
+v1.1.2 still used the old page-global guard `__LCC_CONTENT_V110__`. On an already-open LinkedIn tab, that stale marker could survive an extension update while the old message receiver was no longer usable. Reinjection then exited immediately, so the popup's **Scan** action had no content listener to answer it.
 
-`Couldn't load icon icons/icon48.png specified in icons.`
+v1.1.3 replaces that with a versioned worker marker and stored listener reference. The popup now also performs a worker ping, reinjects the current worker if the ping fails, pings again, and only then sends Scan/Start/Stop.
 
-The v1.1.1 ZIP did physically contain a valid 48x48 PNG, but Edge still rejected the icon reference. v1.1.2 removes the optional extension icon declarations entirely. The v1.1.2 release contains no PNG files.
+## Release gate
 
-## Archive layout test
+All runtime tests were executed against a **clean extraction of the final ZIP**, not the working source directory.
 
-The final ZIP was extracted into a clean empty directory.
+### Packaging and manifest
 
-Result:
+- Root-level `manifest.json`: PASS
+- Manifest V3: PASS
+- Version 1.1.3: PASS
+- No icon dependency: PASS
+- All manifest-declared files present: PASS
+- JavaScript syntax checks: PASS
+- Chromium `--pack-extension` on the exact extracted directory: PASS
 
-- `manifest.json` directly at extraction root: PASS
-- nested `manifest.json`: NONE
-- archive contains a single installation level: PASS
+### Integrated Chromium DOM sandbox
 
-## Manifest dependency test
+The test harness used Chromium 144's real DOM/JavaScript engine with mocked Chrome extension APIs and separate popup/LinkedIn page contexts.
 
-Manifest-declared file dependencies:
+The LinkedIn context deliberately began with:
 
-- `background.js`
-- `popup.html`
-- `lib.js`
-- `content.js`
-- `content.css`
+- stale `__LCC_CONTENT_V110__ = true`
+- no valid message listener
+- two realistic company rows
+- one direct-unfollow control
+- one dialog-confirmation control
 
-All exist, are readable, and are non-empty: PASS
+Results:
 
-Additional assertions:
-
-- `icons` manifest property absent: PASS
-- `action.default_icon` absent: PASS
-- PNG files in release: 0
-
-This specifically prevents recurrence of the v1.1.1 icon-loading failure.
-
-## Chromium parse test
-
-Chromium successfully packed the exact clean-extracted directory using `--pack-extension`, confirming it parsed the Manifest V3 structure and declared resources.
-
-Result: PASS
-
-A separate attempt to use the system Chromium's `--load-extension` switch was blocked by an administrator policy in the execution environment (`Loading of unpacked extensions is disabled by the administrator`). This environment policy is unrelated to the extension, so it is not counted as an extension pass/fail signal.
-
-## JavaScript syntax
-
-`background.js`, `lib.js`, `content.js`, and `popup.js` passed Node syntax validation.
-
-Result: PASS
-
-## Chromium popup action simulation
-
-The popup was rendered in Chromium with mocked Chrome extension APIs.
-
-Verified:
-
-- version label v1.1.2: PASS
-- initial state/scan data rendering: PASS
-- Scan sends `LCC_SCAN`: PASS
-- Select All selects both fixture companies: PASS
-- Start sends both selected company IDs in `LCC_START`: PASS
-- Stop sends `LCC_STOP`: PASS
-- Find followed companies navigates to `https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company`: PASS
-
-## Chromium content workflow simulation
-
-Virtual LinkedIn company-manager DOM contained two company rows:
-
-1. direct unfollow path
-2. confirmation-dialog unfollow path
-
-Result:
-
-- companies discovered: 2
+- stale-tab worker reinjection: PASS
+- exactly one current listener registered: PASS
+- old guard removed: PASS
+- initial company render: PASS
+- Scan button sends `LCC_SCAN`: PASS
+- visible Scan completion status: PASS
+- Scan returns 2 company Pages: PASS
+- healthy Scan avoids unnecessary reinjection: PASS
+- Select All: PASS
+- Start Selected: PASS
+- direct unfollow path: PASS
+- confirmation-dialog unfollow path: PASS
 - completed: 2
 - failed: 0
-- content-script ping version: 1.1.2
+- Stop button enabled during active run: PASS
+- `LCC_STOP` delivered: PASS
+- stop request honored: PASS
+- exact company-manager navigation URL: PASS
 
 ## Final result
 
-PASS
+**40/40 checks PASS**
 
-v1.1.2 should be used instead of v1.1.1.
+SHA-256: `159afded363e78acd252cb08cc41378c2cd1a97b8a54ac5b450fa9927392803e`
+
+Git blob SHA-1 of tested ZIP: `4c61e4de887c3af06b186ac456254107bc0f68a9`
