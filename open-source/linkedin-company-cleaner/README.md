@@ -21,17 +21,21 @@ v1.1.3:
 
 `https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company`
 
-## Verified release
+## Verified release payload
 
-The exact tested ZIP is represented byte-for-byte in:
+The exact tested ZIP is stored losslessly as five independently hash-checked public base64 chunks under:
 
-`linkedin-company-cleaner-v1.1.3-EXTRACT-FIRST.zip.base64`
+`v1.1.3-payload/`
 
-The Clintware download page reconstructs that payload client-side into the normal ZIP. This avoids binary mutation by the GitHub connector while preserving the tested artifact exactly.
+Clintware's download page fetches those five chunks in order and reconstructs:
+
+`linkedin-company-cleaner-v1.1.3-EXTRACT-FIRST.zip`
 
 SHA-256 of the reconstructed ZIP:
 
 `159afded363e78acd252cb08cc41378c2cd1a97b8a54ac5b450fa9927392803e`
+
+Chunk Git blob hashes were verified against the tested local payload before publication.
 
 ## Validation
 
