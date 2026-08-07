@@ -1,39 +1,45 @@
-# LinkedIn Company Cleaner by Clintware
+# LinkedIn Company Cleaner by Clintware v1.1.2
 
-Current release: **v1.1.1**
+A Manifest V3 extension for Microsoft Edge, Google Chrome, Brave, Vivaldi, and other Chromium browsers. It is limited to LinkedIn company Pages and does not target people, schools, newsletters, groups, or skills.
 
-Manifest V3 browser extension for Microsoft Edge, Google Chrome, Brave, Vivaldi, and other Chromium browsers. It bulk or selectively unfollows LinkedIn company Pages from the user's own company-following list.
+## v1.1.2 installation fix
 
-## Download
+v1.1.1 could fail in Edge with `Couldn't load icon icons/icon48.png specified in icons` even though the PNG was present in the ZIP. v1.1.2 removes every icon declaration and every PNG dependency from the extension manifest. Icons are optional for Chromium extensions, so installation can no longer be blocked by an icon resource.
 
-Use `linkedin-company-cleaner-v1.1.1-EXTRACT-FIRST.zip`.
+The release ZIP is also flat: after **Extract All**, `manifest.json` is directly inside the extracted folder you select with **Load unpacked**.
 
-SHA-256: `60246b721c921e3e344384b5b06ef7fbbc163091259c32a756f22abb9fe989ee`
+## Install
 
-## Important installation step
+1. Download `linkedin-company-cleaner-v1.1.2-EXTRACT-FIRST.zip`.
+2. Right-click it and choose **Extract All**.
+3. Open the extracted folder and confirm `manifest.json` is directly visible.
+4. Open `edge://extensions` or `chrome://extensions`.
+5. Enable **Developer mode**.
+6. Choose **Load unpacked** and select that exact extracted folder.
 
-The ZIP must be extracted before using **Load unpacked**. The exact folder selected in Edge or Chrome must directly contain `manifest.json`.
+`VERIFY-AND-OPEN-EXTENSIONS.cmd` is included and checks the required files and confirms the manifest has no icon dependencies.
 
-The package includes `VERIFY-AND-OPEN-EXTENSIONS.cmd`, which checks that `manifest.json` and the required extension files are present before opening the extensions page.
+## Company list route
 
-## Company manager
-
-The **Find followed companies** control opens:
+The **Find followed companies** button opens:
 
 `https://www.linkedin.com/mynetwork/network-manager/company/?filterType=company`
 
 ## Validation
 
-v1.1.1 was regression-tested by extracting the release into an empty directory and pointing Chromium's extension packer at that exact directory. Chromium successfully read and packed the extension. The action dry run also passed Scan, Select All, Start, Stop, direct-unfollow, confirmation-dialog, and missing-content-script recovery flows.
+v1.1.2 passed:
 
-See `TEST_REPORT.md` for the full validation record.
+- clean extraction with root-level `manifest.json`
+- manifest dependency graph validation
+- explicit no-icon/no-PNG assertion
+- Chromium extension pack parsing on the exact extracted directory
+- JavaScript syntax checks
+- Chromium popup wiring simulation for Scan, Select All, Start, Stop, and exact company-manager navigation
+- Chromium DOM simulation for direct-unfollow and confirmation-dialog flows: 2 completed, 0 failed
 
-## Scope and privacy
+## Privacy
 
-- Company Pages only
-- No people, schools, newsletters, groups, or skills
-- Runs locally in the active LinkedIn tab
-- No analytics, external APIs, or remote code
+The extension runs locally in the active LinkedIn tab and contains no analytics, remote code, or third-party API calls.
 
 ## License
 
