@@ -43,7 +43,6 @@ jobs:
           mkdir -p _site
           cp index.html app.js styles.css manifest.webmanifest robots.txt sitemap.xml CNAME .nojekyll _site/
           cp -R assets styles _site/
-          if [ -d proof ]; then cp -R proof _site/; fi
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
