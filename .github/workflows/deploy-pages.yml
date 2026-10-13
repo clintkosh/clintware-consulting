@@ -1,4 +1,4 @@
-name: Retire legacy Clintware Pages site
+name: Retire legacy public site
 
 on:
   push:
@@ -10,32 +10,43 @@ on:
 permissions:
   contents: read
   pages: write
+  id-token: write
+
+concurrency:
+  group: retired-clintware-pages
+  cancel-in-progress: true
 
 jobs:
   retire:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Disable the retired GitHub Pages site
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Prepare a 404-only artifact
         run: |
-          set -euo pipefail
-          code=$(gh api -X DELETE "repos/${GITHUB_REPOSITORY}/pages" --silent 2>&1) || {
-            echo "Pages removal API failed: $code"
-            exit 1
-          }
-          echo "GitHub Pages retirement requested."
+          mkdir -p _site
+          cat > _site/404.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="robots" content="noindex,nofollow">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Site retired</title>
+          </head>
+          <body></body>
+          </html>
+          HTML
 
-      - name: Verify Pages is disabled
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          code=$(gh api -H "Accept: application/vnd.github+json" "repos/${GITHUB_REPOSITORY}/pages" --include 2>&1 || true)
-          if echo "$code" | grep -q "404 Not Found"; then
-            echo "Verified: retired Pages site is disabled."
-          else
-            echo "Pages endpoint did not confirm 404 after disable."
-            echo "$code" | head -c 1500
-            exit 1
-          fi
+      - name: Configure Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload 404-only artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+      - name: Publish retired artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
