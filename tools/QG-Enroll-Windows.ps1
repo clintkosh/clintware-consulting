@@ -11,7 +11,7 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
 }
 
 $base = 'https://mcp.clintware.com/api/v1/quillgeist-lite/runtime'
-$home = Join-Path $env:LOCALAPPDATA 'Clintware\QuillgeistLite'
+$installRoot = Join-Path $env:LOCALAPPDATA 'Clintware\QuillgeistLite'
 $work = Join-Path $env:TEMP ('Clintware-QG-Recovery-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 try {
@@ -66,7 +66,7 @@ try {
     & $safeBootstrap -NoElevate
     if ($LASTEXITCODE -ne 0) { throw ('QG bootstrap failed with exit code ' + $LASTEXITCODE) }
 
-    $resultPath = Join-Path $home 'bootstrap-result.json'
+    $resultPath = Join-Path $installRoot 'bootstrap-result.json'
     if (-not (Test-Path -LiteralPath $resultPath)) { throw 'No enrollment receipt was produced.' }
     $result = Get-Content -LiteralPath $resultPath -Raw -Encoding UTF8 | ConvertFrom-Json
     if ($result.five_step_loop -ne 'passed') { throw 'The five enrollment checkpoints did not pass.' }
