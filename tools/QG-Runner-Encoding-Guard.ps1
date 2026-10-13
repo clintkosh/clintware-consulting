@@ -47,12 +47,14 @@ if ($Kind -eq 'Launcher' -and -not $source.Contains('QG_LAUNCHER_ENCODING_V1')) 
     $source = Insert-AfterExactlyOnce $source $specDownload $specPatch
 
     $runnerDownload = '    Invoke-WebRequest -Uri ($RunnerUrl + "?cb=" + [Guid]::NewGuid().ToString("n")) -OutFile $temp -UseBasicParsing -Headers @{"Cache-Control"="no-cache"}'
-    $source = Insert-AfterExactlyOnce $source $runnerDownload "    & (Join-Path " + '$HomeDir' + " 'qg-runner-encoding-guard.ps1') -SourceFile " + '$temp' + " -Kind Runner"
+    $runnerPatch = '    & (Join-Path $HomeDir ''qg-runner-encoding-guard.ps1'') -SourceFile $temp -Kind Runner'
+    $source = Insert-AfterExactlyOnce $source $runnerDownload $runnerPatch
 }
 if ($Kind -eq 'Runner' -and -not $source.Contains('QG_RUNNER_TASK_ENCODING_V1')) {
     $taskDownload = '      Invoke-WebRequest -Uri $uri -OutFile $tempSource -UseBasicParsing -TimeoutSec 25 -ErrorAction Stop'
     $source = Insert-AfterExactlyOnce $source $taskDownload "      # QG_RUNNER_TASK_ENCODING_V1: validate exact UTF-8 source before parsing." 
-    $source = Insert-AfterExactlyOnce $source $taskDownload "      & (Join-Path " + '$HomeDir' + " 'qg-runner-encoding-guard.ps1') -SourceFile " + '$tempSource' + " -Kind Script"
+    $taskPatch = '      & (Join-Path $HomeDir ''qg-runner-encoding-guard.ps1'') -SourceFile $tempSource -Kind Script'
+    $source = Insert-AfterExactlyOnce $source $taskDownload $taskPatch
 }
 
 if ($source -ne $previous -or -not $hasBom) {
