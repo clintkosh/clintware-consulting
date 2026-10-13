@@ -67,7 +67,7 @@ try{
     $code=@'
 param([string]$Path)
 $bad=0
-foreach($file in Get-ChildItem -LiteralPath $Path -Filter '*.ps1' -File){
+foreach($file in @(Get-ChildItem -LiteralPath $Path -Filter '*.ps1' -File)){
   $tokens=$null;$issues=$null
   [Management.Automation.Language.Parser]::ParseFile($file.FullName,[ref]$tokens,[ref]$issues)|Out-Null
   foreach($issue in @($issues)){Write-Host ("PARSE_FAIL "+$file.Name+" line "+$issue.Extent.StartLineNumber+": "+$issue.Message);$bad++}
